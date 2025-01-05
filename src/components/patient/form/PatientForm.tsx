@@ -1,28 +1,44 @@
 
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 import { usePatientStore } from "../../../store/store";
 import { DraftPatient } from "../../../types";
 import { Error } from "../../error/Error";
+import { useEffect } from "react";
 
 const PatientForm = () => {
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<DraftPatient>();
+    const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<DraftPatient>();
 
-    const { addPatient } = usePatientStore();
+    const { addPatient, activeId, patients, updatePatient } = usePatientStore();
+
+
+    useEffect(() => {
+        if (activeId) {
+            const patient = patients.filter((p) => p.id === activeId)[0]
+            setValue('name', patient.name)
+            setValue('caretaker', patient.caretaker)
+            setValue('date', patient.date)
+            setValue('email', patient.email)
+            setValue('symptoms', patient.symptoms)
+        }
+    }, [activeId]);
+
 
     const registrePatient = (data: DraftPatient) => {
-        addPatient(data);
+        activeId
+            ? (updatePatient(data), toast.success('Paciente Actualizado Correctamente'))
+            : (addPatient(data), toast.success('Paciente registrado Correctamente'))
         reset();
     };
 
     return (
         <div className="md:w-1/2 lg:w-2/5 mx-5">
-            <h2 className="font-black text-3xl text-center">
-                
+            <h2 className="font-black text-3xl text-center mb-5">
                 Seguimiento Pacientes</h2>
 
-            <p className="text-lg mt-5 text-center mb-10">
+            <p className="text-lg font-bold mt-5 text-indigo-600  text-center mb-10">
                 Añade Pacientes y {''}
                 <span className="text-indigo-600 font-bold">Administralos</span>
             </p>
@@ -131,7 +147,7 @@ const PatientForm = () => {
 
                 <input
                     type="submit"
-                    className="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-colors"
+                    className="bg-indigo-600 w-full p-3 rounded-lg text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-colors"
                     value='Guardar Paciente'
 
                 />
